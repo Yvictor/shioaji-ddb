@@ -13,6 +13,7 @@ RUN curl -LO https://www.dolphindb.com/downloads/DolphinDB_Linux$VER.zip && \
     echo "" >> /opt/ddb/server/dolphindb.cfg && \
     echo "persistenceDir=dbcache" >> /opt/ddb/server/dolphindb.cfg && \
     echo "subPort=8808" >> /opt/ddb/server/dolphindb.cfg && \
+    echo "maxPubConnections=1" >> /opt/ddb/server/dolphindb.cfg && \
     echo "perfMonitoring=1" >> /opt/ddb/server/dolphindb.cfg && \
     echo "newValuePartitionPolicy=add" >> /opt/ddb/server/dolphindb.cfg && \
     echo "maxPartitionNumPerQuery=1000000" >> /opt/ddb/server/dolphindb.cfg && \
