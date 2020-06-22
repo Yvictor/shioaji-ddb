@@ -7,8 +7,10 @@ services:
     image: ddb:sjddb
     volumes:
       - ./ddb/server/local8848:/opt/ddb/server/local8848
+      - ./ddb/server/dbcache:/opt/ddb/server/dbcache
     ports:
         - 8828:8848
+        - 8808:8808
     container_name: ddb-sjddb
     restart: always
     networks:

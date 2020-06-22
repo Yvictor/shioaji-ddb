@@ -9,6 +9,9 @@ RUN curl -LO https://www.dolphindb.com/downloads/DolphinDB_Linux$VER.zip && \
     unzip DolphinDB_Linux$VER.zip && \
     chmod 755 /opt/ddb/server/dolphindb && \
     echo "" >> /opt/ddb/server/dolphindb.cfg && \
+    echo "persistenceDir=dbcache" >> /opt/ddb/server/dolphindb.cfg && \
+    echo "subPort=8808" >> /opt/ddb/server/dolphindb.cfg && \
+    echo "perfMonitoring=1" >> /opt/ddb/server/dolphindb.cfg && \
     echo "newValuePartitionPolicy=add" >> /opt/ddb/server/dolphindb.cfg && \
     echo "maxPartitionNumPerQuery=1000000" >> /opt/ddb/server/dolphindb.cfg && \
     echo "./dolphindb -console 0 >> local8848/dolphindb.log" >> cmd && \
