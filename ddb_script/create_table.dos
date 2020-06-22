@@ -1,15 +1,5 @@
-//"MKT/*/TSE/2330",
-//{
-//    "AmountSum": [0.0],
-//    "Close": [314.5],
-//    "Date": "2020/06/22",
-//     "Simtrade": 1,
-//     "TickType": [0],
-//     "Time": "08:59:59.885851",
-//     "VolSum": [0],
-//     "Volume": [2513]
-// }
 
+//Create Table Method 1
 schema_MKT = streamTable(
     array(SYMBOL,0) as Exchange // TSE
    ,array(INT,0) as SubSeq      // sub of array
@@ -24,5 +14,21 @@ schema_MKT = streamTable(
    ,array(INT,0) as Simtrade    // 1
    ,array(NANOTIMESTAMP,0) as ReceviceTime
 )
-enableTableShareAndPersistence(table=schema_MKT,asynWrite=true, compress=false,cacheSize=10000, tableName="StreamMKT")
+enableTableShareAndPersistence(table=schema_MKT,asynWrite=true, compress=false,cacheSize=50000, tableName="StreamMKT")
 undef(`schema_MKT)
+
+// Create Table Method 2
+schemaTickTFE = streamTable(100:0, `Exchange`SubSeq`Amount`AmountSum`AvgPrice`Close`Code`Date`DiffPrice`DiffRate`DiffType`High`Low`Open`TargetKindPrice`TickType`Time`TradeAskVolSum`TradeBidVolSum`VolSum`Volume ,[SYMBOL,INT,DOUBLE,DOUBLE,DOUBLE,DOUBLE,SYMBOL,DATE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,TIME,DOUBLE,DOUBLE,DOUBLE,DOUBLE]);
+enableTableShareAndPersistence(table=schemaTickTFE,asynWrite=true, compress=false,cacheSize=50000, tableName="StreamTickTFE");
+undef(`schemaTickTFE)
+
+// Create DFS Table once from StreamTickTFE.
+login('admin','123456')
+db = database("dfs://TickTFE",VALUE, today()..today()+1); 
+db.createPartitionedTable(select * from StreamTickTFE,`TickTFE,`Date)
+
+// ***Subscribe StreamTable to DFS - execute every time when restart ddb server.
+tb_TickTFE = loadTable("dfs://TickTFE",`TickTFE)
+subscribeTable(,`StreamTickTFE, "TickTFE_to_dfs", -1 , tb_TickTFE ,true)
+undef(`tb_TickTFE)
+
