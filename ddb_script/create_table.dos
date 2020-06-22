@@ -18,7 +18,7 @@ enableTableShareAndPersistence(table=schema_MKT,asynWrite=true, compress=false,c
 undef(`schema_MKT)
 
 // Create Table Method 2
-schemaTickTFE = streamTable(100:0, `Exchange`SubSeq`Amount`AmountSum`AvgPrice`Close`Code`Date`DiffPrice`DiffRate`DiffType`High`Low`Open`TargetKindPrice`TickType`Time`TradeAskVolSum`TradeBidVolSum`VolSum`Volume ,[SYMBOL,INT,DOUBLE,DOUBLE,DOUBLE,DOUBLE,SYMBOL,DATE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,TIME,DOUBLE,DOUBLE,DOUBLE,DOUBLE]);
+schemaTickTFE = streamTable(100:0, `Exchange`SubSeq`SimTrade`Amount`AmountSum`AvgPrice`Close`Code`Date`DiffPrice`DiffRate`DiffType`High`Low`Open`TargetKindPrice`TickType`Time`TradeAskVolSum`TradeBidVolSum`VolSum`Volume ,[SYMBOL,INT,INT,DOUBLE,DOUBLE,DOUBLE,DOUBLE,SYMBOL,DATE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,TIME,DOUBLE,DOUBLE,DOUBLE,DOUBLE]);
 enableTableShareAndPersistence(table=schemaTickTFE,asynWrite=true, compress=false,cacheSize=50000, tableName="StreamTickTFE");
 undef(`schemaTickTFE)
 
@@ -32,3 +32,6 @@ tb_TickTFE = loadTable("dfs://TickTFE",`TickTFE)
 subscribeTable(,`StreamTickTFE, "TickTFE_to_dfs", -1 , tb_TickTFE ,true)
 undef(`tb_TickTFE)
 
+
+//Check subscribe status
+getStreamingStat().subWorkers

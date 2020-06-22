@@ -23,6 +23,7 @@ class DDBQuoteManager:
             for index, _ in enumerate(quote.get("Close", [])):
                 tick = flatten_tick(quote, index)
                 tick["SubSeq"] = tick["index"]
+                tick["SimTrade"] = tick.get("SimTrade", 0)
                 tick["Exchange"] = "TFE"
                 tick["Date"] = tick["Date"].replace("/", ".")
                 tick["Time"] = tick["Time"][0:-3]
@@ -31,5 +32,5 @@ class DDBQuoteManager:
             df = pd.DataFrame.from_dict(ticks, orient="columns")
             self.ddb.upload({"tStreamTickTFE": df})
             self.ddb.run(
-                "objByName('StreamTickTFE').append!(select Exchange,index,Amount,AmountSum,AvgPrice,Close,Code,date(Date),DiffPrice,DiffRate,DiffType,High,Low,Open,TargetKindPrice,TickType,time(Time),TradeAskVolSum,TradeBidVolSum,VolSum,Volume from tStreamTickTFE)"
+                "objByName('StreamTickTFE').append!(select Exchange,index,SimTrade,Amount,AmountSum,AvgPrice,Close,Code,date(Date),DiffPrice,DiffRate,DiffType,High,Low,Open,TargetKindPrice,TickType,time(Time),TradeAskVolSum,TradeBidVolSum,VolSum,Volume from tStreamTickTFE)"
             )
