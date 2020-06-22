@@ -1,12 +1,14 @@
 FROM centos:latest
 
-ARG VER=64_V1.00.20
+ARG VER=64_V1.10.9
 
 RUN yum install unzip -y
 
 WORKDIR /opt/ddb
 RUN curl -LO https://www.dolphindb.com/downloads/DolphinDB_Linux$VER.zip && \
     unzip DolphinDB_Linux$VER.zip && \
+    curl -LO https://raw.githubusercontent.com/dolphindb/DolphinDBModules/master/ta/src/ta.dos && \
+    mkdir /opt/ddb/server/modules && mv ta.dos /opt/ddb/server/modules/ta.dos && \
     chmod 755 /opt/ddb/server/dolphindb && \
     echo "" >> /opt/ddb/server/dolphindb.cfg && \
     echo "persistenceDir=dbcache" >> /opt/ddb/server/dolphindb.cfg && \
