@@ -1,0 +1,28 @@
+//"MKT/*/TSE/2330",
+//{
+//    "AmountSum": [0.0],
+//    "Close": [314.5],
+//    "Date": "2020/06/22",
+//     "Simtrade": 1,
+//     "TickType": [0],
+//     "Time": "08:59:59.885851",
+//     "VolSum": [0],
+//     "Volume": [2513]
+// }
+
+schema_MKT = streamTable(
+    array(SYMBOL,0) as Exchange // TSE
+   ,array(INT,0) as SubSeq      // sub of array
+   ,array(SYMBOL,0) as Code     // 2330
+   ,array(DATE,0) as Date       // 2020.06.22
+   ,array(NANOTIME,0) as Time   // 08:59:59.885851
+   ,array(DOUBLE,0) as Close    // 314.5
+   ,array(LONG,0) as Volume     // 2513
+   ,array(LONG,0) as VolSum     // 0
+   ,array(LONG,0) as AmountSum  // 0
+   ,array(INT,0) as TickType    // 0
+   ,array(INT,0) as Simtrade    // 1
+   ,array(NANOTIMESTAMP,0) as ReceviceTime
+)
+enableTableShareAndPersistence(table=schema_MKT,asynWrite=true, compress=false,cacheSize=10000, tableName="StreamMKT")
+undef(`schema_MKT)
