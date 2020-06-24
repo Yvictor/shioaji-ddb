@@ -14,8 +14,26 @@ class RedisQuoteManager:
 
 
 class DDBQuoteManager:
+    CREATE_STREAM_TABLE = """
+schemaTickTFE = streamTable(100:0, `Exchange`SubSeq`SimTrade`Amount`AmountSum`AvgPrice`Close`Code`Date`DiffPrice`DiffRate`DiffType`High`Low`Open`TargetKindPrice`TickType`Time`TradeAskVolSum`TradeBidVolSum`VolSum`Volume ,[SYMBOL,INT,INT,DOUBLE,DOUBLE,DOUBLE,DOUBLE,SYMBOL,DATE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,TIME,DOUBLE,DOUBLE,DOUBLE,DOUBLE]);
+enableTableShareAndPersistence(table=schemaTickTFE,asynWrite=true, compress=false,cacheSize=50000, tableName="StreamTickTFE");
+undef(`schemaTickTFE)
+    """
+    CREATE_TABLE = """
+db = database("dfs://TickTFE",VALUE, today()..today()+1); 
+db.createPartitionedTable(select * from StreamTickTFE,`TickTFE,`Date)
+    """
+    SUBSCRIBE_TABLE = """
+tb_TickTFE = loadTable("dfs://TickTFE",`TickTFE)
+subscribeTable(,`StreamTickTFE, "TickTFE_to_dfs", -1 , tb_TickTFE ,true)
+undef(`tb_TickTFE)
+    """
+
     def __init__(self, ddb: dolphindb.session):
         self.ddb = ddb
+        self.ddb.run(self.CREATE_STREAM_TABLE)
+        self.ddb.run(self.CREATE_TABLE)
+        self.ddb.run(self.SUBSCRIBE_TABLE)
 
     def on_quote(self, topic: str, quote: dict):
         if topic.startswith("L"):  # or topic.startswith("MKT"):
