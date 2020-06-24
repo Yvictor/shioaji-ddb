@@ -1,0 +1,47 @@
+login('admin','123456')
+schemaTickTSE = streamTable(
+    array(SYMBOL,0) as Exchange // TSE
+   ,array(INT,0) as SubSeq      // sub of array
+   ,array(SYMBOL,0) as Code     // 2330
+   ,array(DATE,0) as Date       // 2020.06.22
+   ,array(NANOTIME,0) as Time   // 08:59:59.885851
+   ,array(DOUBLE,0) as Close    // 314.5
+   ,array(LONG,0) as Volume     // 2513
+   ,array(LONG,0) as VolSum     // 0
+   ,array(LONG,0) as AmountSum  // 0
+   ,array(INT,0) as TickType    // 0
+   ,array(INT,0) as Simtrade    // 1
+)
+enableTableShareAndPersistence(table=schemaTickTSE,asynWrite=true, compress=false,cacheSize=50000, tableName="StreamTickTSE")
+undef(`schemaTickTSE)
+
+
+// Create Table Method 2
+schemaTickTFE = streamTable(100:0, `Exchange`SubSeq`SimTrade`Amount`AmountSum`AvgPrice`Close`Code`Date`DiffPrice`DiffRate`DiffType`High`Low`Open`TargetKindPrice`TickType`Time`TradeAskVolSum`TradeBidVolSum`VolSum`Volume ,[SYMBOL,INT,INT,DOUBLE,DOUBLE,DOUBLE,DOUBLE,SYMBOL,DATE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,TIME,DOUBLE,DOUBLE,DOUBLE,DOUBLE]);
+enableTableShareAndPersistence(table=schemaTickTFE,asynWrite=true, compress=false,cacheSize=50000, tableName="StreamTickTFE");
+undef(`schemaTickTFE)
+
+// ***Subscribe StreamTable to DFS - execute every time when restart ddb server.
+tb_TickTFE = loadTable("dfs://TickTFE",`TickTFE)
+subscribeTable(,`StreamTickTFE, "TickTFE_to_dfs", -1 , tb_TickTFE ,true)
+undef(`tb_TickTFE)
+
+tb_TickTSE = loadTable("dfs://TickTSE",`TickTSE)
+subscribeTable(,`StreamTickTSE, "TickTSE_to_dfs", -1 , tb_TickTSE ,true)
+undef(`tb_TickTSE)
+
+//    Stream                 Stream
+//    (RAW)              (With TimeStamp)
+// |-----------|   sub    |----------|    sub with TimeAggr  |-------|   sub StreamOHLC to dfsOHLC     |--------|
+// | TSE , TFE | =======> |   Ticks  |  ===================> | OHLC  |===============================> |dfs OHLC|
+// |-----------|          |----------|                       |-------|                                 |--------|
+
+//Create TimeAggr
+TS_Filed = `code`ts`close`volume`amount
+TS_Type = [SYMBOL,TIMESTAMP,DOUBLE,LONG,DOUBLE]
+share streamTable(100:0,TS_Filed,TS_Type) as Ticks
+OHLC_Filed = `ts`code`open`high`low`close`volume`amount
+OHLC_Type = [TIMESTAMP, SYMBOL, DOUBLE,DOUBLE,DOUBLE,DOUBLE,LONG,DOUBLE]
+share streamTable(100:0,OHLC_Filed,OHLC_Type) as OHLC
+tsAggrKline = createTimeSeriesAggregator(name="Aggr_Kline", windowSize=60000, step=60000, metrics=<[first(close),max(close),min(close),last(close),sum(volume),sum(amount)]>, dummyTable=Ticks, outputTable=OHLC, timeColumn=`ts, keyColumn=`code)//updateTime=1,useWindowStartTime=false)
+subscribeTable(tableName="Ticks", actionName="act_tsaggr", offset=-1, handler=append!{tsAggrKline}, msgAsTable=true)
