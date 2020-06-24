@@ -1,6 +1,6 @@
 
 //Create Table Method 1
-schema_MKT = streamTable(
+schemaTickTSE = streamTable(
     array(SYMBOL,0) as Exchange // TSE
    ,array(INT,0) as SubSeq      // sub of array
    ,array(SYMBOL,0) as Code     // 2330
@@ -12,10 +12,10 @@ schema_MKT = streamTable(
    ,array(LONG,0) as AmountSum  // 0
    ,array(INT,0) as TickType    // 0
    ,array(INT,0) as Simtrade    // 1
-   ,array(NANOTIMESTAMP,0) as ReceviceTime
 )
-enableTableShareAndPersistence(table=schema_MKT,asynWrite=true, compress=false,cacheSize=50000, tableName="StreamMKT")
-undef(`schema_MKT)
+enableTableShareAndPersistence(table=schemaTickTSE,asynWrite=true, compress=false,cacheSize=50000, tableName="StreamTickTSE")
+undef(`schemaTickTSE)
+
 
 // Create Table Method 2
 schemaTickTFE = streamTable(100:0, `Exchange`SubSeq`SimTrade`Amount`AmountSum`AvgPrice`Close`Code`Date`DiffPrice`DiffRate`DiffType`High`Low`Open`TargetKindPrice`TickType`Time`TradeAskVolSum`TradeBidVolSum`VolSum`Volume ,[SYMBOL,INT,INT,DOUBLE,DOUBLE,DOUBLE,DOUBLE,SYMBOL,DATE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,DOUBLE,TIME,DOUBLE,DOUBLE,DOUBLE,DOUBLE]);
@@ -27,10 +27,18 @@ login('admin','123456')
 db = database("dfs://TickTFE",VALUE, today()..today()+1); 
 db.createPartitionedTable(select * from StreamTickTFE,`TickTFE,`Date)
 
+db = database("dfs://TickTSE",VALUE, today()..today()+1); 
+db.createPartitionedTable(select * from StreamTickTSE,`TickTSE,`Date)
+
 // ***Subscribe StreamTable to DFS - execute every time when restart ddb server.
 tb_TickTFE = loadTable("dfs://TickTFE",`TickTFE)
 subscribeTable(,`StreamTickTFE, "TickTFE_to_dfs", -1 , tb_TickTFE ,true)
 undef(`tb_TickTFE)
+
+tb_TickTSE = loadTable("dfs://TickTSE",`TickTSE)
+subscribeTable(,`StreamTickTSE, "TickTSE_to_dfs", -1 , tb_TickTSE ,true)
+undef(`tb_TickTSE)
+
 
 
 //Check subscribe status
