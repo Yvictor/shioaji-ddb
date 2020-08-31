@@ -1,21 +1,14 @@
-version: '3'
+version: '3.4'
 services:
   ddb:
     build:
       context: .
+      network: host
       dockerfile: Dockerfile.dolphindb
     image: ddb:sjddb
     volumes:
-      - ./ddb/server/local8848:/opt/ddb/server/local8848
+      - /data/sjddb/local8848:/opt/ddb/server/local8848
       - ./ddb/server/dbcache:/opt/ddb/server/dbcache
-    ports:
-        - 8828:8848
-        - 8808:8808
     container_name: ddb-sjddb
     restart: always
-    networks:
-      - backend
-
-networks: 
-  backend:
-    driver: bridge
+    network_mode: "host"
