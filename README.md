@@ -3,6 +3,6 @@ Shioaji and dolphindb integration
 
 ### quickstart
 ``` bash
-pip install -e .
 docker-compose up -d
+pip install -e .
 ```
