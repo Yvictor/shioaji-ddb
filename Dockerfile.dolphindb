@@ -1,6 +1,6 @@
 FROM centos:latest
 
-ARG VER=64_V1.10.9
+ARG VER=64_V1.20.2
 
 RUN yum install unzip -y
 
@@ -17,7 +17,7 @@ RUN curl -LO https://www.dolphindb.com/downloads/DolphinDB_Linux$VER.zip && \
     echo "perfMonitoring=1" >> /opt/ddb/server/dolphindb.cfg && \
     echo "newValuePartitionPolicy=add" >> /opt/ddb/server/dolphindb.cfg && \
     echo "maxPartitionNumPerQuery=1000000" >> /opt/ddb/server/dolphindb.cfg && \
-    echo "./dolphindb -console 0 >> local8848/dolphindb.log" >> cmd && \
+    echo "./dolphindb -console 0" >> cmd && \
     chmod 755 cmd
 
 WORKDIR /opt/ddb/server
