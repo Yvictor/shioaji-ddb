@@ -1,6 +1,6 @@
 FROM centos:latest
 
-ARG VER=64_V1.20.2
+ARG VER=64_V1.20.10
 
 RUN yum install unzip -y
 
